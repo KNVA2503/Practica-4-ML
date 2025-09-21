@@ -1,10 +1,4 @@
-"""
-Script completo para aplicar K-Means clustering a múltiples datasets
-Autor: Científico de Datos Experto
-Fecha: 2025
-"""
 
-# Importar las librerías necesarias
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
