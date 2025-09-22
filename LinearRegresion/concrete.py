@@ -6,7 +6,7 @@ from sklearn.metrics import mean_squared_error, r2_score
 
 # 1. Cargar el dataset de resistencia del concreto
 print("Cargando el dataset de Resistencia del Concreto...")
-url = "https://archive.ics.uci.edu/ml/machine-learning-databases/concrete/compresive/Concrete_Data.xls"
+url = "https://archive.ics.uci.edu/ml/machine-learning-databases/concrete/compressive/Concrete_Data.csv"
 df = pd.read_excel(url)
 print("Dataset cargado exitosamente.")
 
