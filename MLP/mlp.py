@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt  # <--- 1. IMPORTACIÓN AÑADIDA
 from sklearn.datasets import load_iris, load_wine, load_diabetes, fetch_california_housing
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.neural_network import MLPRegressor
@@ -11,12 +12,6 @@ warnings.filterwarnings('ignore')
 def load_dataset(dataset_name):
     """
     Carga el dataset especificado y retorna X, y
-    
-    Args:
-        dataset_name (str): Nombre del dataset a cargar
-    
-    Returns:
-        tuple: (X, y) características y objetivo
     """
     if dataset_name == 'iris':
         data = load_iris()
@@ -43,23 +38,19 @@ def load_dataset(dataset_name):
         print(f"Características: {X.shape[1]}, Muestras: {X.shape[0]}")
         
     elif dataset_name == 'car_price':
-        # Placeholder para dataset Car Price
+        # Placeholder
         print(f"Dataset: {dataset_name.upper()} (PLACEHOLDER)")
-        print("Este es un placeholder. Reemplazar con datos reales.")
-        # Generar datos sintéticos para demostración
         np.random.seed(42)
-        X = np.random.rand(1000, 8)  # 8 características simuladas
-        y = np.random.rand(1000) * 50000 + 10000  # Precios simulados
+        X = np.random.rand(1000, 8)
+        y = np.random.rand(1000) * 50000 + 10000
         print(f"Características: {X.shape[1]}, Muestras: {X.shape[0]}")
         
     elif dataset_name == 'concrete_strength':
-        # Placeholder para dataset Concrete Strength
+        # Placeholder
         print(f"Dataset: {dataset_name.upper()} (PLACEHOLDER)")
-        print("Este es un placeholder. Reemplazar con datos reales.")
-        # Generar datos sintéticos para demostración
         np.random.seed(42)
-        X = np.random.rand(500, 9)  # 9 características simuladas
-        y = np.random.rand(500) * 80 + 10  # Resistencia simulada
+        X = np.random.rand(500, 9)
+        y = np.random.rand(500) * 80 + 10
         print(f"Características: {X.shape[1]}, Muestras: {X.shape[0]}")
         
     else:
@@ -69,24 +60,12 @@ def load_dataset(dataset_name):
 
 def prepare_data(X, y, test_size=0.2, random_state=42):
     """
-    Prepara los datos dividiendo en conjuntos de entrenamiento y prueba,
-    y aplica escalado estándar a las características.
-    
-    Args:
-        X (array): Características
-        y (array): Variable objetivo
-        test_size (float): Proporción del conjunto de prueba
-        random_state (int): Semilla para reproducibilidad
-    
-    Returns:
-        tuple: (X_train_scaled, X_test_scaled, y_train, y_test, scaler)
+    Prepara los datos dividiendo y escalando.
     """
-    # Dividir los datos
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=test_size, random_state=random_state
     )
     
-    # Aplicar escalado estándar (obligatorio)
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.transform(X_test)
@@ -99,17 +78,7 @@ def prepare_data(X, y, test_size=0.2, random_state=42):
 def optimize_mlp_hyperparameters(X_train, y_train, cv=5, random_state=42):
     """
     Optimiza los hiperparámetros del MLPRegressor usando GridSearchCV.
-    
-    Args:
-        X_train (array): Características de entrenamiento escaladas
-        y_train (array): Variable objetivo de entrenamiento
-        cv (int): Número de folds para validación cruzada
-        random_state (int): Semilla para reproducibilidad
-    
-    Returns:
-        GridSearchCV: Objeto fitted con los mejores parámetros
     """
-    # Definir el espacio de búsqueda de hiperparámetros
     param_grid = {
         'hidden_layer_sizes': [(50, 50), (100,)],
         'activation': ['relu', 'tanh'],
@@ -118,10 +87,8 @@ def optimize_mlp_hyperparameters(X_train, y_train, cv=5, random_state=42):
         'learning_rate': ['constant', 'adaptive']
     }
     
-    # Crear el modelo base
     mlp = MLPRegressor(max_iter=1000, random_state=random_state)
     
-    # Configurar GridSearchCV
     grid_search = GridSearchCV(
         estimator=mlp,
         param_grid=param_grid,
@@ -132,9 +99,6 @@ def optimize_mlp_hyperparameters(X_train, y_train, cv=5, random_state=42):
     )
     
     print("Optimizando hiperparámetros...")
-    print(f"Combinaciones totales: {len(param_grid['hidden_layer_sizes']) * len(param_grid['activation']) * len(param_grid['solver']) * len(param_grid['alpha']) * len(param_grid['learning_rate'])}")
-    
-    # Entrenar el modelo
     grid_search.fit(X_train, y_train)
     
     return grid_search
@@ -142,17 +106,7 @@ def optimize_mlp_hyperparameters(X_train, y_train, cv=5, random_state=42):
 def train_final_model(best_params, X_train, y_train, random_state=42):
     """
     Entrena el modelo final con los mejores hiperparámetros.
-    
-    Args:
-        best_params (dict): Mejores hiperparámetros encontrados
-        X_train (array): Características de entrenamiento escaladas
-        y_train (array): Variable objetivo de entrenamiento
-        random_state (int): Semilla para reproducibilidad
-    
-    Returns:
-        MLPRegressor: Modelo entrenado
     """
-    # Crear y entrenar el modelo final
     final_model = MLPRegressor(**best_params, max_iter=1000, random_state=random_state)
     final_model.fit(X_train, y_train)
     
@@ -161,33 +115,16 @@ def train_final_model(best_params, X_train, y_train, random_state=42):
 def evaluate_model(model, X_test, y_test):
     """
     Evalúa el modelo en el conjunto de prueba y calcula métricas.
-    
-    Args:
-        model: Modelo entrenado
-        X_test (array): Características de prueba
-        y_test (array): Variable objetivo de prueba
-    
-    Returns:
-        tuple: (mse, r2)
     """
-    # Realizar predicciones
     y_pred = model.predict(X_test)
-    
-    # Calcular métricas
     mse = mean_squared_error(y_test, y_pred)
     r2 = r2_score(y_test, y_pred)
     
-    return mse, r2
+    return mse, r2, y_pred
 
 def print_results(dataset_name, best_params, mse, r2):
     """
     Imprime un resumen claro de los resultados.
-    
-    Args:
-        dataset_name (str): Nombre del dataset
-        best_params (dict): Mejores hiperparámetros
-        mse (float): Error cuadrático medio
-        r2 (float): Coeficiente de determinación
     """
     print(f"\n{'='*60}")
     print(f"RESULTADOS PARA {dataset_name.upper()}")
@@ -201,50 +138,71 @@ def print_results(dataset_name, best_params, mse, r2):
     print(f"  • Error Cuadrático Medio (MSE): {mse:.4f}")
     print(f"  • Coeficiente de Determinación (R²): {r2:.4f}")
     
-    # Interpretación del R²
-    if r2 >= 0.9:
-        interpretation = "Excelente"
-    elif r2 >= 0.8:
-        interpretation = "Muy bueno"
-    elif r2 >= 0.6:
-        interpretation = "Bueno"
-    elif r2 >= 0.4:
-        interpretation = "Regular"
-    else:
-        interpretation = "Pobre"
+    if r2 >= 0.9: interpretation = "Excelente"
+    elif r2 >= 0.8: interpretation = "Muy bueno"
+    elif r2 >= 0.6: interpretation = "Bueno"
+    elif r2 >= 0.4: interpretation = "Regular"
+    else: interpretation = "Pobre"
     
     print(f"  • Interpretación del R²: {interpretation}")
+
+# <--- 2. NUEVA FUNCIÓN PARA CREAR GRÁFICOS --->
+def plot_results(model, y_test, y_pred, r2, dataset_name):
+    """
+    Genera los gráficos de resultados para un dataset.
+    
+    Args:
+        model: Modelo MLPRegressor entrenado.
+        y_test (array): Valores reales del conjunto de prueba.
+        y_pred (array): Valores predichos por el modelo.
+        r2 (float): Coeficiente de determinación R².
+        dataset_name (str): Nombre del dataset.
+    """
+    # --- Gráfico 1: Predicción vs. Valores Reales ---
+    plt.figure(figsize=(10, 6))
+    plt.scatter(y_test, y_pred, alpha=0.6, edgecolors='k')
+    # Línea de predicción perfecta (y=x)
+    perfect_line = np.linspace(min(y_test.min(), y_pred.min()), max(y_test.max(), y_pred.max()), 100)
+    plt.plot(perfect_line, perfect_line, 'r--', linewidth=2, label='Predicción Perfecta')
+    plt.title(f'Predicción vs. Valores Reales - {dataset_name.upper()}\n(R² = {r2:.4f})', fontsize=14, fontweight='bold')
+    plt.xlabel('Valores Reales', fontsize=12)
+    plt.ylabel('Valores Predichos', fontsize=12)
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.show()
+
+    # --- Gráfico 2: Curva de Pérdida (Loss Curve) ---
+    plt.figure(figsize=(10, 6))
+    plt.plot(model.loss_curve_, color='b', label='Pérdida de Entrenamiento')
+    plt.title(f'Curva de Pérdida del Entrenamiento - {dataset_name.upper()}', fontsize=14, fontweight='bold')
+    plt.xlabel('Épocas (Epochs)', fontsize=12)
+    plt.ylabel('Pérdida (Loss)', fontsize=12)
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+    plt.show()
 
 def process_dataset(dataset_name):
     """
     Procesa un dataset completo siguiendo el pipeline especificado.
-    
-    Args:
-        dataset_name (str): Nombre del dataset a procesar
     """
     try:
         print(f"\n{'#'*80}")
         print(f"PROCESANDO DATASET: {dataset_name.upper()}")
         print(f"{'#'*80}")
         
-        # 1. Carga y Preparación
         X, y = load_dataset(dataset_name)
-        
-        # 2. Escalado de Datos y división
         X_train_scaled, X_test_scaled, y_train, y_test, scaler = prepare_data(X, y)
-        
-        # 3. Optimización de Hiperparámetros
         grid_search = optimize_mlp_hyperparameters(X_train_scaled, y_train)
-        
-        # 4. Entrenamiento del modelo final
         best_params = grid_search.best_params_
         final_model = train_final_model(best_params, X_train_scaled, y_train)
         
-        # 5. Evaluación
-        mse, r2 = evaluate_model(final_model, X_test_scaled, y_test)
+        # Se obtiene y_pred para usarlo en los gráficos
+        mse, r2, y_pred = evaluate_model(final_model, X_test_scaled, y_test)
         
-        # 6. Reporte
         print_results(dataset_name, best_params, mse, r2)
+
+        # <--- 3. LLAMADA A LA NUEVA FUNCIÓN DE GRÁFICOS --->
+        plot_results(final_model, y_test, y_pred, r2, dataset_name)
         
         return {
             'dataset': dataset_name,
@@ -261,32 +219,19 @@ def process_dataset(dataset_name):
 
 def main():
     """
-    Función principal que ejecuta el pipeline completo para todos los datasets.
+    Función principal que ejecuta el pipeline completo.
     """
     print("OPTIMIZACIÓN DE MLPRegressor EN MÚLTIPLES DATASETS")
     print("=" * 80)
-    print("Implementación de pipeline completo con GridSearchCV")
     
-    # Lista de datasets a procesar
-    datasets = [
-        'iris',
-        'wine', 
-        'diabetes',
-        'california_housing',
-        'car_price',
-        'concrete_strength'
-    ]
-    
-    # Almacenar resultados
+    datasets = ['iris', 'wine', 'diabetes', 'california_housing', 'car_price', 'concrete_strength']
     results = []
     
-    # Procesar cada dataset
     for dataset in datasets:
         result = process_dataset(dataset)
         if result:
             results.append(result)
     
-    # Resumen final
     print(f"\n{'='*80}")
     print("RESUMEN FINAL DE TODOS LOS DATASETS")
     print(f"{'='*80}")
@@ -300,7 +245,6 @@ def main():
             r2 = result['r2']
             mse = result['mse']
             activation = result['best_params']['activation']
-            
             print(f"{dataset_name.upper():<20} {r2:<10.4f} {mse:<15.4f} {activation:<15}")
     
     print(f"\n{'='*80}")
